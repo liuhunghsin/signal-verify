@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>訊號驗證知識網</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap">
+<style>
+/* Layout: 儀器面板式——左側固定學習路徑（窄螢幕變成頂部可捲動頁籤），右側單欄閱讀區，示波器螢幕作為主視覺 */
+:root{
+  --bg:#F1F5F6; --surface:#FFFFFF; --ink:#12212A; --muted:#53656E; --line:#D3DEE2;
+  --screen:#F9FBFB; --grid:#DCE6E9; --trace:#0A6F80; --marker:#B06700; --code:#E8EFF1;
+  --good:#2B7A3B; --bad:#B42323; --trace-soft:rgba(10,111,128,.10);
+  --f-display:"Noto Serif TC","Songti TC",serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0C1317; --surface:#121C21; --ink:#DCE6EA; --muted:#91A3AB; --line:#24343B;
+  --screen:#081014; --grid:#18272D; --trace:#4CC8DA; --marker:#F0A63A; --code:#17242A;
+  --good:#6CC47D; --bad:#F07070; --trace-soft:rgba(76,200,218,.12); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0C1317; --surface:#121C21; --ink:#DCE6EA; --muted:#91A3AB; --line:#24343B;
+  --screen:#081014; --grid:#18272D; --trace:#4CC8DA; --marker:#F0A63A; --code:#17242A;
+  --good:#6CC47D; --bad:#F07070; --trace-soft:rgba(76,200,218,.12); color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.8;padding-inline:16px;padding-block:0 48px}
+a{color:var(--trace)}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--marker);outline-offset:2px}
+.shell{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:0}
+@media (min-width:960px){.shell{grid-template-columns:230px minmax(0,1fr);gap:48px}}
+
+/* 頂部與導覽 */
+.brand{display:flex;align-items:baseline;gap:10px;padding-block:20px 8px}
+.brand b{font-family:var(--f-display);font-size:20px;letter-spacing:.02em}
+.brand span{font-family:var(--f-mono);font-size:12px;color:var(--muted);letter-spacing:.08em}
+nav.side{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);margin-inline:-16px;padding-inline:16px}
+nav.side ol{list-style:none;margin:0;padding:8px 0;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav.side ol::-webkit-scrollbar{display:none}
+nav.side a{display:flex;gap:8px;align-items:baseline;white-space:nowrap;text-decoration:none;color:var(--muted);padding:6px 10px;border-radius:6px;font-size:14px}
+nav.side a .n{font-family:var(--f-mono);font-size:11px;color:var(--muted);opacity:.8}
+nav.side a:hover{color:var(--ink);background:var(--trace-soft)}
+nav.side a[aria-current="page"]{color:var(--trace);background:var(--trace-soft);font-weight:500}
+@media (min-width:960px){
+  nav.side{border:0;margin:0;padding:0;align-self:start;top:env(safe-area-inset-top,0px)}
+  nav.side ol{flex-direction:column;overflow:visible;padding:8px 0}
+  nav.side .grp{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--muted);padding:16px 10px 4px}
+}
+nav.side .grp{display:none}
+@media (min-width:960px){nav.side .grp{display:block}}
+
+main{min-width:0;padding-top:12px}
+.page{max-width:740px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;color:var(--marker);text-transform:uppercase;margin:24px 0 4px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.35;margin:0}
+h1{font-size:clamp(28px,5vw,40px);margin-bottom:12px}
+h2{font-size:23px;margin:44px 0 12px;padding-top:12px;border-top:1px solid var(--line)}
+h3{font-size:18px;margin:28px 0 8px;font-family:var(--f-body);font-weight:700}
+p{margin:0 0 14px}
+.lead{font-size:18px;color:var(--muted)}
+ul,ol{padding-left:1.3em;margin:0 0 14px}
+li{margin-bottom:4px}
+code,.mono{font-family:var(--f-mono);font-size:.9em}
+code{background:var(--code);padding:1px 5px;border-radius:4px}
+.formula{font-family:var(--f-mono);font-size:17px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--trace);padding:12px 16px;margin:12px 0 16px;overflow-x:auto;white-space:nowrap}
+.note{font-size:14px;color:var(--muted);border-left:2px solid var(--marker);padding-left:12px;margin:12px 0 18px}
+.tbl{overflow-x:auto;margin:12px 0 20px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;line-height:1.6}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:500;color:var(--muted);font-size:13px;background:var(--code);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.fam td{background:var(--trace-soft);font-weight:700;color:var(--trace)}
+
+/* 示波器螢幕 */
+.scope{background:var(--screen);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:16px 0 8px}
+.scope canvas{display:block;width:100%;aspect-ratio:16/8;max-width:100%}
+.scope .bar{display:flex;flex-wrap:wrap;gap:6px 18px;font-family:var(--f-mono);font-size:12px;color:var(--muted);padding:8px 14px;border-top:1px solid var(--line)}
+.scope .bar b{color:var(--trace);font-weight:500}
+.scope .bar .m{color:var(--marker)}
+figcaption{font-size:13px;color:var(--muted);margin-bottom:18px}
+svg text{font-family:var(--f-mono)}
+
+/* 首頁 */
+.hero{display:grid;gap:8px;padding-top:8px}
+.path{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin:12px 0 8px;padding:0;list-style:none}
+.path a{display:flex;flex-direction:column;gap:4px;height:100%;padding:14px 16px;border:1px solid var(--line);border-radius:8px;background:var(--surface);text-decoration:none;color:var(--ink)}
+.path a:hover{border-color:var(--trace)}
+.path .n{font-family:var(--f-mono);font-size:12px;color:var(--marker)}
+.path b{font-size:16px}
+.path span.d{font-size:14px;color:var(--muted);line-height:1.6}
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:12px 0}
+.keys div{padding:12px 14px;border-top:2px solid var(--trace);background:var(--surface)}
+.keys .f{font-family:var(--f-mono);font-size:16px;margin:2px 0 4px;overflow-x:auto}
+.keys small{color:var(--muted);font-size:13px;line-height:1.5;display:block}
+
+/* 抖動樹 */
+.tree{font-family:var(--f-mono);font-size:14px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto;white-space:pre;line-height:1.7;margin:12px 0 18px}
+.tree .c{color:var(--muted)}
+.tree .k{color:var(--trace);font-weight:500}
+
+/* 流程 */
+.steps{list-style:none;padding:0;counter-reset:s;display:grid;gap:10px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:36px minmax(0,1fr);gap:12px;margin:0}
+.steps li::before{content:counter(s);font-family:var(--f-mono);font-size:14px;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--trace);color:var(--trace);display:grid;place-items:center;margin-top:2px}
+.steps b{display:block}
+.check{list-style:none;padding:0;display:grid;gap:6px}
+.check label{display:flex;gap:10px;align-items:flex-start;cursor:pointer;padding:6px 10px;border-radius:6px;background:var(--surface);border:1px solid var(--line)}
+.check input{margin-top:6px;accent-color:var(--trace)}
+.check input:checked + span{color:var(--muted);text-decoration:line-through}
+.ck-meta{display:flex;gap:12px;align-items:center;font-size:13px;color:var(--muted);margin-bottom:8px}
+
+/* 工具 */
+.tools{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.tool{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.tool h3{margin:0 0 10px;font-size:16px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:12px}
+.fields label{display:grid;gap:3px;font-size:13px;color:var(--muted)}
+input[type=number],input[type=search],select{font:inherit;font-family:var(--f-mono);font-size:15px;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);width:100%;min-width:0}
+input[type=search]{font-family:var(--f-body)}
+.out{display:grid;gap:4px;font-size:14px;border-top:1px dashed var(--line);padding-top:10px}
+.out div{display:flex;justify-content:space-between;gap:10px}
+.out span{color:var(--muted)}
+.out b{font-family:var(--f-mono);font-weight:500;font-variant-numeric:tabular-nums;color:var(--trace);text-align:right}
+
+/* 名詞表 */
+.gl{display:grid;gap:0;margin-top:12px;border-top:1px solid var(--line)}
+.gl div{display:grid;grid-template-columns:minmax(0,1fr);gap:2px;padding:12px 2px;border-bottom:1px solid var(--line)}
+@media (min-width:640px){.gl div{grid-template-columns:200px minmax(0,1fr);gap:16px}}
+.gl dt{font-weight:700}
+.gl dt small{display:block;font-family:var(--f-mono);font-weight:400;font-size:12px;color:var(--muted)}
+.gl dd{margin:0;font-size:15px}
+.empty{color:var(--muted);padding:16px 0}
+
+.pager{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:48px;padding-top:16px;border-top:1px solid var(--line)}
+.pager a{text-decoration:none;display:grid;font-size:15px}
+.pager small{font-size:12px;color:var(--muted);font-family:var(--f-mono)}
+.pager .nx{text-align:right;margin-left:auto}
+footer{max-width:740px;font-size:13px;color:var(--muted);margin-top:40px}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <nav class="side" aria-label="章節">
+    <div class="brand"><b>訊號驗證知識網</b><span>SIGNAL · VALIDATION</span></div>
+    <ol>
+      <li><a href="#home" data-to="home">首頁</a></li>
+      <li class="grp">學習路徑</li>
+      <li><a href="#si" data-to="si"><span class="n">01</span>訊號完整性基礎</a></li>
+      <li><a href="#eye" data-to="eye"><span class="n">02</span>眼圖與抖動</a></li>
+      <li><a href="#measure" data-to="measure"><span class="n">03</span>量測儀器與方法</a></li>
+      <li><a href="#specs" data-to="specs"><span class="n">04</span>介面規格速覽</a></li>
+      <li><a href="#flow" data-to="flow"><span class="n">05</span>驗證流程</a></li>
+      <li><a href="#debug" data-to="debug"><span class="n">06</span>常見問題排查</a></li>
+      <li class="grp">參考</li>
+      <li><a href="#tools" data-to="tools">計算工具</a></li>
+      <li><a href="#glossary" data-to="glossary">名詞表</a></li>
+    </ol>
+  </nav>
+
+  <main>
+  <!-- 首頁 -->
+  <section class="page" data-page="home">
+    <div class="hero">
+      <p class="eyebrow">高速數位介面 · 入門到中階</p>
+      <h1>看懂眼圖，<br>才知道訊號過不過得了關</h1>
+      <p class="lead">這裡整理硬體高速訊號驗證需要的觀念：從上升時間、傳輸線、反射與損耗，到眼圖、抖動分解、示波器與探棒的使用，以及 USB、PCIe、HDMI、DDR 等介面的驗證重點。</p>
+    </div>
+    <figure style="margin:0">
+      <div class="scope">
+        <canvas data-eye="nrz" aria-label="NRZ 眼圖示意，數百條 2 UI 波形疊加"></canvas>
+        <div class="bar"><span>模式 <b>NRZ</b></span><span>時基 <b>0.2 UI/div</b></span><span>疊加 <b>700 波形</b></span><span class="m">眼圖中心 = 最佳取樣點</span></div>
+      </div>
+      <figcaption>模擬的 NRZ 眼圖。每條線是 2 個單位間隔（UI）的波形片段，疊在一起後中間的空白就是「眼睛」。</figcaption>
+    </figure>
+
+    <h2>學習路徑</h2>
+    <p>建議依序閱讀。每一章都承接前一章的觀念。</p>
+    <ul class="path">
+      <li><a href="#si"><span class="n">01</span><b>訊號完整性基礎</b><span class="d">上升時間與頻寬、特性阻抗、反射、損耗、串音</span></a></li>
+      <li><a href="#eye"><span class="n">02</span><b>眼圖與抖動</b><span class="d">眼高眼寬、遮罩測試、RJ / DJ 分解、浴缸曲線、PAM4</span></a></li>
+      <li><a href="#measure"><span class="n">03</span><b>量測儀器與方法</b><span class="d">示波器頻寬、探棒負載、去嵌入、TDR、VNA、BERT、等化</span></a></li>
+      <li><a href="#specs"><span class="n">04</span><b>介面規格速覽</b><span class="d">USB、PCIe、HDMI、DisplayPort、DDR、乙太網路</span></a></li>
+      <li><a href="#flow"><span class="n">05</span><b>驗證流程</b><span class="d">從讀規格到交報告的七個步驟與檢查清單</span></a></li>
+      <li><a href="#debug"><span class="n">06</span><b>常見問題排查</b><span class="d">症狀 → 可能原因 → 怎麼查</span></a></li>
+    </ul>
+
+    <h2>先記住這三條</h2>
+    <div class="keys">
+      <div><small>頻寬與上升時間</small><div class="f">BW ≈ 0.35 / t<sub>r</sub></div><small>t<sub>r</sub> = 35 ps → 約 10 GHz</small></div>
+      <div><small>反射係數</small><div class="f">Γ = (Z<sub>L</sub> − Z<sub>0</sub>) / (Z<sub>L</sub> + Z<sub>0</sub>)</div><small>50 Ω 線接 60 Ω 負載 → Γ ≈ 0.09</small></div>
+      <div><small>總抖動（BER 1e-12）</small><div class="f">TJ = DJ + 14.069 × RJ<sub>rms</sub></div><small>隨機抖動會被放大約 14 倍</small></div>
+    </div>
+    <p><a href="#tools">到計算工具實際算算看 →</a></p>
+  </section>
+
+  <!-- 01 SI -->
+  <section class="page" data-page="si" hidden>
+    <p class="eyebrow">01 · Signal Integrity</p>
+    <h1>訊號完整性基礎</h1>
+    <p class="lead">訊號完整性（SI）問的是：發送端送出的 0 和 1，到了接收端還分不分得清楚。速度愈快，走線就愈不像一條「導線」，而愈像一個會反射、會損耗、會互相干擾的通道。</p>
+
+    <h2>為什麼需要訊號驗證</h2>
+    <p>模擬只能反映模型裡有的東西。實際的板材參數、製程公差、連接器、線材、電源雜訊和溫度，都會讓量產板子與模擬結果有落差。訊號驗證就是用儀器實際量測，確認每個介面在規格要求下仍有足夠的裕度（margin），並在出問題時找出原因。</p>
+
+    <h2>上升時間決定頻寬</h2>
+    <p>決定一個數位訊號「有多高頻」的，主要是邊緣的上升時間，而不是時脈頻率。上升時間通常指 10% 到 90% 的時間。</p>
+    <div class="formula">BW ≈ 0.35 / t<sub>r</sub>　　f<sub>knee</sub> ≈ 0.5 / t<sub>r</sub></div>
+    <p>例如 100 MHz 時脈，但邊緣只有 50 ps，訊號的有效頻寬約 7 GHz。這也是為什麼「低速」介面換了更快的晶片後，也可能突然出現振鈴和串音問題。</p>
+
+    <h2>傳輸線與特性阻抗</h2>
+    <p>當走線的傳遞延遲和上升時間相當時，就要當成傳輸線看待。常用經驗法則：走線延遲超過上升時間的約 1/6，就需要控制阻抗。FR-4 板材內層走線的傳遞延遲約為 <span class="mono">6–7 ps/mm</span>（約 150–180 ps/inch）。</p>
+    <p>特性阻抗 Z<sub>0</sub> 由線寬、介電層厚度、介電常數與銅厚決定。常見目標值：</p>
+    <div class="tbl"><table>
+      <tr><th>用途</th><th>常見目標阻抗</th></tr>
+      <tr><td>一般單端高速線</td><td class="num">50 Ω</td></tr>
+      <tr><td>USB 差動對</td><td class="num">90 Ω</td></tr>
+      <tr><td>PCIe 差動對</td><td class="num">85 Ω（亦常見 100 Ω）</td></tr>
+      <tr><td>HDMI、DisplayPort、乙太網路差動對</td><td class="num">100 Ω</td></tr>
+      <tr><td>DDR 資料線（單端）</td><td class="num">約 40–50 Ω</td></tr>
+    </table></div>
+    <p class="note">實際目標值以晶片廠設計指南與板廠疊構為準，製程公差通常為 ±10%。</p>
+
+    <h2>反射</h2>
+    <p>訊號遇到阻抗改變的地方，就會有一部分能量反射回去。過孔（via）、連接器、焊墊、分支走線（stub）和端接不當都是常見來源。</p>
+    <div class="formula">Γ = (Z<sub>L</sub> − Z<sub>0</sub>) / (Z<sub>L</sub> + Z<sub>0</sub>)</div>
+    <p>Γ 為正時反射同向，波形會出現上凸的台階；為負則出現下凹。開路 Γ = +1，短路 Γ = −1，匹配時 Γ = 0。反射來回疊加後，就成了示波器上看到的振鈴（ringing）。</p>
+
+    <h2>損耗</h2>
+    <p>通道損耗隨頻率升高而增加，主要有兩種：</p>
+    <ul>
+      <li><b>導體損耗</b>：高頻電流集中在銅箔表面（趨膚效應），加上銅箔表面粗糙度，等效電阻變大。</li>
+      <li><b>介質損耗</b>：與板材的損耗因子（Df）成正比，頻率愈高愈明顯。高速設計常改用低損耗板材。</li>
+    </ul>
+    <p>高頻衰減得比低頻多，邊緣就會變鈍，前一個位元的能量拖進後一個位元，形成<b>符號間干擾（ISI）</b>。這是高速介面眼圖閉合的頭號原因，也是需要等化器的理由。損耗通常用<b>奈奎斯特頻率</b>（符號率的一半）上的插入損耗 dB 值來描述。</p>
+
+    <h2>串音</h2>
+    <p>相鄰走線之間透過電容和電感耦合，互相干擾。</p>
+    <ul>
+      <li><b>近端串音（NEXT）</b>：在干擾源發送端那一側量到的雜訊。</li>
+      <li><b>遠端串音（FEXT）</b>：沿著走線方向傳到接收端的雜訊。帶狀線（stripline）的 FEXT 通常比微帶線（microstrip）小。</li>
+    </ul>
+    <p>常見對策：加大線距（3W 原則：中心距至少三倍線寬）、縮短平行長度、在高速差動對之間放地線或地孔、讓高速線走內層。</p>
+
+    <h2>差動訊號</h2>
+    <p>高速序列介面幾乎都用差動訊號：接收端只看 P 與 N 的差值，共模雜訊會被抵消，輻射也較低。但 P/N 兩條線的長度差（skew）或不對稱佈線，會把差動訊號轉換成共模雜訊（模態轉換），反而讓眼圖變差、EMI 增加。</p>
+
+    <h2>電源完整性的影響</h2>
+    <p>多個輸出同時切換時，電源與地的瞬間壓降（同步切換雜訊，SSN）會直接調變訊號振幅與邊緣時間。電源漣波也會透過 PLL 變成抖動。所以量到的抖動特別大時，常常要回頭查電源。</p>
+  </section>
+
+  <!-- 02 Eye -->
+  <section class="page" data-page="eye" hidden>
+    <p class="eyebrow">02 · Eye Diagram &amp; Jitter</p>
+    <h1>眼圖與抖動</h1>
+    <p class="lead">眼圖把大量位元波形疊在同一個畫面上，一次看出振幅夠不夠、時序準不準。抖動則是時間軸上的不確定性，決定眼睛的寬度。</p>
+
+    <h2>眼圖怎麼形成</h2>
+    <p>示波器擷取一長段資料，用恢復出來的時脈（CDR）把波形切成一個個 UI（Unit Interval，一個位元或符號的時間），再全部疊在一起。例如 10 Gb/s NRZ 的 1 UI = 100 ps。</p>
+    <p>眼睛張得愈開，接收端愈容易判斷。眼睛上下被壓扁是振幅問題（損耗、雜訊、反射），左右被擠窄是時序問題（抖動、ISI）。</p>
+
+    <h3>常見量測參數</h3>
+    <div class="tbl"><table>
+      <tr><th>參數</th><th>意義</th></tr>
+      <tr><td>眼高 Eye Height</td><td>眼睛中央可用的電壓開口，通常以特定 BER 外推。</td></tr>
+      <tr><td>眼寬 Eye Width</td><td>眼睛可用的時間開口，等於 1 UI 減去總抖動。</td></tr>
+      <tr><td>振幅 / 共模電壓</td><td>差動振幅與 P、N 的平均電壓。</td></tr>
+      <tr><td>上升 / 下降時間</td><td>邊緣速度，常用 20%–80% 或 10%–90%。</td></tr>
+      <tr><td>交叉點 Crossing</td><td>上升與下降邊緣交會的高度，偏離 50% 代表工作週期失真。</td></tr>
+    </table></div>
+
+    <h3>遮罩測試</h3>
+    <p>規格會定義一個眼圖遮罩（mask），通常是中央的菱形或六角形，加上上下禁止區。任何波形取樣點碰到遮罩就算失敗。許多新版規格改在套用參考等化器後，於指定 BER 下檢查眼高、眼寬。</p>
+
+    <h2>抖動分類</h2>
+    <div class="tree"><span class="k">TJ</span> 總抖動 Total Jitter
+├─ <span class="k">RJ</span> 隨機抖動 Random          <span class="c">高斯分布、無上界，用 rms 描述</span>
+└─ <span class="k">DJ</span> 確定性抖動 Deterministic   <span class="c">有上界，用峰對峰描述</span>
+   ├─ <span class="k">DDJ</span> 資料相依抖動          <span class="c">與資料型樣有關</span>
+   │  ├─ ISI  符號間干擾         <span class="c">通道損耗、反射</span>
+   │  └─ DCD  工作週期失真       <span class="c">上升下降不對稱、偏壓</span>
+   ├─ <span class="k">PJ</span>  週期性抖動            <span class="c">電源漣波、時脈耦合、展頻</span>
+   └─ <span class="k">BUJ</span> 有界不相關抖動        <span class="c">串音等</span></div>
+    <p>RJ 來自熱雜訊等隨機過程，理論上沒有上限，量得愈久最大值就愈大，所以不能直接用峰對峰值比較，要換算到指定的位元錯誤率（BER）。</p>
+    <div class="formula">TJ(BER) = DJ<sub>δδ</sub> + 2Q(BER) × RJ<sub>rms</sub></div>
+    <div class="tbl"><table>
+      <tr><th>目標 BER</th><th>2Q 係數</th></tr>
+      <tr><td class="num">1e-9</td><td class="num">11.996</td></tr>
+      <tr><td class="num">1e-12</td><td class="num">14.069</td></tr>
+      <tr><td class="num">1e-15</td><td class="num">15.883</td></tr>
+    </table></div>
+    <p class="note">DJ<sub>δδ</sub> 是雙狄拉克模型下的 DJ，通常比直接量到的 DJ 峰對峰值小。不同量測軟體的分解演算法可能給出不同的 RJ / DJ，比較數據時要用同一套工具。</p>
+
+    <h2>浴缸曲線</h2>
+    <p>把取樣點在 UI 內左右移動，畫出每個位置的 BER，就得到像浴缸剖面的曲線。在目標 BER 的高度切一刀，兩邊的距離就是該 BER 下的眼寬。</p>
+    <figure style="margin:0">
+      <div class="tbl" style="padding:8px 4px 0">
+        <svg id="bathtub" viewBox="0 0 640 300" width="100%" role="img" aria-label="浴缸曲線：BER 對取樣位置"></svg>
+      </div>
+      <figcaption id="bt-cap">範例：DJ = 0.15 UI、RJ = 0.02 UI rms。</figcaption>
+    </figure>
+
+    <h2>PAM4 與多階調變</h2>
+    <p>當速度高到通道損耗吃不消，就改用一個符號帶多個位元。PAM4 有 4 個電壓階、每個符號 2 個位元，符號率只要 NRZ 的一半，但眼圖變成上下三個眼睛。</p>
+    <figure style="margin:0">
+      <div class="scope">
+        <canvas data-eye="pam4" aria-label="PAM4 眼圖示意，三個上下排列的眼睛"></canvas>
+        <div class="bar"><span>模式 <b>PAM4</b></span><span>電壓階 <b>4</b></span><span class="m">三個眼各自量眼高與線性度</span></div>
+      </div>
+      <figcaption>PAM4 每個眼的振幅只有 NRZ 的三分之一，訊雜比約損失 9.5 dB。</figcaption>
+    </figure>
+    <ul>
+      <li>訊雜比較差，通常要搭配前向錯誤更正（FEC），允許較高的原始 BER。</li>
+      <li>多了<b>階位線性度</b>（RLM）等量測項目，確認四個電壓階是否等距。</li>
+      <li>PCIe 6.0、7.0 與 100G/200G 每通道乙太網路採用 PAM4；USB4 v2 與 GDDR7 採用 PAM3。</li>
+    </ul>
+
+    <h2>時脈恢復與抖動轉移</h2>
+    <p>接收端的 CDR 會追蹤低頻抖動，所以低頻的漂移不會真的造成錯誤。為了讓量測結果貼近真實接收器，規格會指定「參考 CDR」的迴路頻寬，示波器以同樣的頻寬恢復時脈再量抖動。CDR 設定錯誤，量到的抖動可能差很多，這是新手最常踩的坑之一。</p>
+  </section>
+
+  <!-- 03 Measure -->
+  <section class="page" data-page="measure" hidden>
+    <p class="eyebrow">03 · Instruments</p>
+    <h1>量測儀器與方法</h1>
+    <p class="lead">量測本身也是通道的一部分。儀器頻寬、探棒、治具和接線方式，都會改變你看到的波形。</p>
+
+    <h2>示波器</h2>
+    <h3>頻寬</h3>
+    <p>示波器頻寬不足會讓邊緣變慢、眼圖看起來比實際差。量測到的上升時間約為：</p>
+    <div class="formula">t<sub>r,量測</sub> ≈ √( t<sub>r,訊號</sub>² + t<sub>r,示波器</sub>² + t<sub>r,探棒</sub>² )</div>
+    <p>經驗上，示波器頻寬取訊號頻寬的 3 到 5 倍，上升時間誤差約在 5% 到 2% 之內。做相容性測試時，各規格的測試程序（CTS / MOI）會明確指定最低頻寬與濾波設定，一律照規定。</p>
+    <h3>取樣率與記錄長度</h3>
+    <ul>
+      <li>即時取樣率建議至少為頻寬的 2.5 倍。</li>
+      <li>記錄長度要夠長，才能收集足夠的位元做抖動分解與低頻抖動分析，一般至少上百萬個 UI。</li>
+      <li>測差動訊號時先做通道間 deskew，確保 P、N 兩路時間對齊。</li>
+    </ul>
+
+    <h2>探棒</h2>
+    <p>探棒接上去就會對電路造成負載，尤其是電容性負載會在高頻降低阻抗。</p>
+    <ul>
+      <li><b>地線越短越好</b>：長地線的電感會和探棒電容形成共振，產生不存在的振鈴。高頻量測請用彈簧地針或焊接式探頭。</li>
+      <li><b>差動探棒</b>：量差動訊號時直接取 P−N，共模抑制較好。</li>
+      <li><b>量測點位置</b>：理想上要量接收端的腳位，但實際常只能量到過孔或測試點，這時量到的是含反射的波形，判讀時要考慮。</li>
+      <li><b>Interposer</b>：DDR 這類 BGA 封裝的介面，常用插在記憶體顆粒下方的轉接板把訊號引出來。</li>
+    </ul>
+
+    <h2>治具、去嵌入與嵌入</h2>
+    <p>序列介面的相容性測試通常透過官方或協會提供的測試治具，用 SMA 線直接接到示波器。治具本身的損耗會被扣掉，這叫<b>去嵌入</b>（de-embedding），需要治具的 S 參數檔。</p>
+    <p>反過來，有些規格要求在量到的波形上「加上」一段參考通道，模擬最差長度的走線或線材，再看眼圖是否仍能張開，這叫<b>嵌入</b>（embedding）。</p>
+
+    <h2>TDR：看阻抗沿著走線怎麼變</h2>
+    <p>時域反射儀（TDR）送出快速的步階訊號，量反射回來的波形，換算出沿路每個位置的阻抗。連接器、過孔、焊墊的阻抗不連續會變成曲線上的凸起或凹陷，時間軸可以換算成距離，用來定位問題點。</p>
+
+    <h2>VNA 與 S 參數</h2>
+    <p>向量網路分析儀（VNA）在頻域量通道特性，得到 S 參數。高速差動通道常看混合模態參數：</p>
+    <div class="tbl"><table>
+      <tr><th>參數</th><th>名稱</th><th>看什麼</th></tr>
+      <tr><td class="num">SDD21</td><td>差動插入損耗</td><td>通道衰減多少，愈接近 0 dB 愈好</td></tr>
+      <tr><td class="num">SDD11</td><td>差動回波損耗</td><td>反射有多大，愈負愈好</td></tr>
+      <tr><td class="num">SCD21</td><td>差動轉共模</td><td>P/N 不對稱造成的模態轉換</td></tr>
+      <tr><td class="num">NEXT / FEXT</td><td>串音</td><td>相鄰通道耦合過來的能量</td></tr>
+    </table></div>
+    <p>S 參數檔（Touchstone 格式，.s4p 等）也是去嵌入與通道模擬的輸入。</p>
+
+    <h2>BERT 與接收端測試</h2>
+    <p>發送端測試看的是「送得好不好」；接收端測試看的是「收得住多差的訊號」。位元錯誤率測試儀（BERT）會產生刻意劣化的<b>壓力眼</b>，加上指定的 RJ、正弦抖動（SJ）、ISI 與雜訊，送進待測物，再讓待測物進入迴路回送（loopback）模式把收到的資料送回來比對，計算錯誤率。</p>
+
+    <h2>等化</h2>
+    <p>高速介面靠等化補償通道損耗，量測時也必須套用規格指定的參考等化器，否則眼睛可能完全閉合。</p>
+    <ul>
+      <li><b>發送端 FFE / 去強調（de-emphasis）</b>：在發送端預先壓低低頻成分，相對提升高頻。PCIe 3.0 以後定義了多組預設值（preset）。</li>
+      <li><b>CTLE</b>：接收端的連續時間線性等化器，提升高頻增益，但也會放大高頻雜訊。</li>
+      <li><b>DFE</b>：決策回授等化器，依據已判斷出的前幾個位元扣除 ISI，不放大雜訊，但錯誤會連鎖傳遞。</li>
+    </ul>
+  </section>
+
+  <!-- 04 Specs -->
+  <section class="page" data-page="specs" hidden>
+    <p class="eyebrow">04 · Interfaces</p>
+    <h1>介面規格速覽</h1>
+    <p class="lead">不同介面的速度、調變與測試重點差很多。下表整理常見介面每通道的資料率，方便快速對照。</p>
+    <div class="tbl"><table>
+      <tr><th>介面</th><th>世代</th><th>每通道速率</th><th>調變 / 編碼</th></tr>
+      <tr class="fam"><td colspan="4">USB</td></tr>
+      <tr><td>USB 2.0</td><td>High Speed</td><td class="num">480 Mb/s</td><td>NRZI</td></tr>
+      <tr><td>USB 3.2</td><td>Gen 1</td><td class="num">5 Gb/s</td><td>NRZ · 8b/10b</td></tr>
+      <tr><td>USB 3.2</td><td>Gen 2</td><td class="num">10 Gb/s</td><td>NRZ · 128b/132b</td></tr>
+      <tr><td>USB4</td><td>Gen 3</td><td class="num">20 Gb/s</td><td>NRZ · 雙通道共 40 Gb/s</td></tr>
+      <tr><td>USB4 v2</td><td>Gen 4</td><td class="num">40 Gb/s</td><td>PAM3 · 對稱 80 Gb/s，非對稱可達 120 Gb/s</td></tr>
+      <tr class="fam"><td colspan="4">PCI Express</td></tr>
+      <tr><td>PCIe 1.x</td><td>Gen1</td><td class="num">2.5 GT/s</td><td>NRZ · 8b/10b</td></tr>
+      <tr><td>PCIe 2.x</td><td>Gen2</td><td class="num">5 GT/s</td><td>NRZ · 8b/10b</td></tr>
+      <tr><td>PCIe 3.x</td><td>Gen3</td><td class="num">8 GT/s</td><td>NRZ · 128b/130b</td></tr>
+      <tr><td>PCIe 4.0</td><td>Gen4</td><td class="num">16 GT/s</td><td>NRZ · 128b/130b</td></tr>
+      <tr><td>PCIe 5.0</td><td>Gen5</td><td class="num">32 GT/s</td><td>NRZ · 128b/130b</td></tr>
+      <tr><td>PCIe 6.0</td><td>Gen6</td><td class="num">64 GT/s</td><td>PAM4 · FLIT 模式 + FEC</td></tr>
+      <tr><td>PCIe 7.0</td><td>Gen7</td><td class="num">128 GT/s</td><td>PAM4 · FLIT 模式 + FEC</td></tr>
+      <tr class="fam"><td colspan="4">影音介面</td></tr>
+      <tr><td>HDMI 2.0</td><td>TMDS</td><td class="num">6 Gb/s</td><td>8b/10b · 3 通道共 18 Gb/s</td></tr>
+      <tr><td>HDMI 2.1</td><td>FRL</td><td class="num">12 Gb/s</td><td>16b/18b · 4 通道共 48 Gb/s</td></tr>
+      <tr><td>HDMI 2.2</td><td>FRL</td><td class="num">24 Gb/s</td><td>4 通道共 96 Gb/s</td></tr>
+      <tr><td>DisplayPort 1.4</td><td>HBR3</td><td class="num">8.1 Gb/s</td><td>8b/10b</td></tr>
+      <tr><td>DisplayPort 2.1</td><td>UHBR20</td><td class="num">20 Gb/s</td><td>128b/132b · 4 通道共 80 Gb/s</td></tr>
+      <tr class="fam"><td colspan="4">記憶體</td></tr>
+      <tr><td>DDR4</td><td>—</td><td class="num">1600–3200 MT/s</td><td>單端資料線 · 差動 DQS</td></tr>
+      <tr><td>DDR5</td><td>—</td><td class="num">4800–8800 MT/s</td><td>單端資料線 · 接收端 DFE</td></tr>
+      <tr><td>GDDR7</td><td>—</td><td class="num">最高數十 Gb/s</td><td>PAM3</td></tr>
+      <tr class="fam"><td colspan="4">乙太網路 SerDes</td></tr>
+      <tr><td>100G / 通道</td><td>802.3ck 等</td><td class="num">106.25 Gb/s</td><td>PAM4 · 53.125 GBd</td></tr>
+      <tr><td>200G / 通道</td><td>802.3dj</td><td class="num">212.5 Gb/s</td><td>PAM4 · 約 106 GBd</td></tr>
+    </table></div>
+    <p class="note">數值為公開規格的常見整理，實際驗證請以規格組織最新版規格書與測試規範為準。</p>
+
+    <h2>各介面的驗證重點</h2>
+    <h3>USB</h3>
+    <ul>
+      <li>USB-IF 相容性測試分為發送端、接收端與線材測試。</li>
+      <li>Type-C 可正反插，兩個方向都要驗證；還要注意低頻週期訊號（LFPS）和 USB 2.0 訊號品質。</li>
+      <li>USB4 需考慮與 Thunderbolt 的相容性。</li>
+    </ul>
+    <h3>PCIe</h3>
+    <ul>
+      <li>使用 PCI-SIG 的 CBB（主機板測附加卡）與 CLB（附加卡測主機板）治具。</li>
+      <li>Gen3 起要測多組發送端預設值（preset P0–P10），並用 PCI-SIG 的分析工具套用參考 CTLE / DFE。</li>
+      <li>參考時脈（REFCLK）的抖動也是獨立測項，常被忽略。</li>
+    </ul>
+    <h3>HDMI / DisplayPort</h3>
+    <ul>
+      <li>須通過授權測試中心的 CTS 項目，並測試不同長度線材下的表現。</li>
+      <li>FRL 與 UHBR 速率下，連結訓練（link training）與等化設定會直接影響結果。</li>
+    </ul>
+    <h3>DDR</h3>
+    <ul>
+      <li>雙向匯流排，讀和寫的波形混在一起，要靠 DQS 與 DQ 的相位關係或前導碼（preamble）分離讀寫。</li>
+      <li>重點項目：建立與保持時間、DQS–DQ 偏移、過衝與下衝、VIH / VIL。</li>
+      <li>DDR5 定義了接收端眼圖遮罩與參考 DFE，量測要套用。</li>
+    </ul>
+    <h3>高速乙太網路</h3>
+    <ul>
+      <li>通道評估常用 COM（Channel Operating Margin），把 S 參數、串音與參考接收器一起算出裕度。</li>
+      <li>電氣介面看 SNDR、階位線性度；光模組則看 TDECQ。</li>
+    </ul>
+  </section>
+
+  <!-- 05 Flow -->
+  <section class="page" data-page="flow" hidden>
+    <p class="eyebrow">05 · Workflow</p>
+    <h1>驗證流程</h1>
+    <p class="lead">多數驗證專案的時間不是花在量測，而是花在準備和除錯。照順序做好前面的步驟，後面會省很多時間。</p>
+    <ol class="steps">
+      <li><div><b>讀規格與測試規範</b>找出規格書、相容性測試規範（CTS）與儀器廠的量測方法說明（MOI）。確認測項、判定標準、所需頻寬與治具。</div></li>
+      <li><div><b>規劃測試矩陣</b>列出要測的埠、通道、速率、等化 preset，以及電壓與溫度的邊界條件，估算所需時間。</div></li>
+      <li><div><b>準備儀器與校正</b>確認儀器在校正有效期內，開機暖機後執行自我校正、探棒補償與通道 deskew。</div></li>
+      <li><div><b>治具與去嵌入</b>準備治具與其 S 參數檔，確認線材狀況，設定去嵌入或參考通道嵌入。</div></li>
+      <li><div><b>執行量測並完整記錄</b>用自動化軟體跑測項，同時記下板號、韌體版本、儀器設定與環境溫度，讓結果可以重現。</div></li>
+      <li><div><b>判讀與除錯</b>失敗項目先排除量測本身的問題，再往設計、元件或韌體設定追。</div></li>
+      <li><div><b>撰寫報告</b>附上結果、裕度、截圖、設定檔與未解問題清單，讓設計團隊能據此決定下一步。</div></li>
+    </ol>
+
+    <h2>量測前檢查清單</h2>
+    <div class="ck-meta"><span id="ck-count">0 / 0 完成</span><button type="button" id="ck-reset" style="font:inherit;font-size:13px;background:none;border:1px solid var(--line);border-radius:6px;padding:2px 10px;color:var(--muted);cursor:pointer">清除勾選</button></div>
+    <ul class="check" id="checklist"></ul>
+    <p class="note">勾選狀態只存在你這台裝置的瀏覽器裡。</p>
+  </section>
+
+  <!-- 06 Debug -->
+  <section class="page" data-page="debug" hidden>
+    <p class="eyebrow">06 · Debug</p>
+    <h1>常見問題排查</h1>
+    <p class="lead">測試失敗時，先懷疑量測，再懷疑設計。下表依症狀整理常見原因和查法。</p>
+    <div class="tbl"><table>
+      <tr><th>症狀</th><th>可能原因</th><th>怎麼查</th></tr>
+      <tr><td>眼高不足</td><td>通道損耗過大、發送振幅設定低、等化設定不合適</td><td>量 SDD21 看奈奎斯特頻率損耗；掃過不同 preset 與 CTLE 設定</td></tr>
+      <tr><td>眼寬窄、抖動大</td><td>參考時脈抖動、電源雜訊、串音</td><td>做抖動分解，看 PJ 的頻率是否對應電源或其他時脈；量參考時脈相位雜訊</td></tr>
+      <tr><td>波形有台階或振鈴</td><td>阻抗不連續、過孔 stub、端接不當</td><td>用 TDR 定位；檢查背鑽與端接電阻</td></tr>
+      <tr><td>每次量結果都不一樣</td><td>探棒地線過長、未 deskew、CDR 設定錯誤、記錄長度不足</td><td>重做校正與 deskew；核對 CDR 迴路頻寬與規格設定</td></tr>
+      <tr><td>共模雜訊大</td><td>P/N 長度不匹配、佈線不對稱、參考平面斷開</td><td>量 P/N skew 與 SCD21；檢查走線是否跨越平面分割</td></tr>
+      <tr><td>連結訓練失敗或降速</td><td>接收端裕度不足、等化協商失敗、參考時脈問題</td><td>用協定分析儀或晶片的連結狀態紀錄，看卡在哪個狀態</td></tr>
+      <tr><td>只在特定溫度或電壓失敗</td><td>裕度不足，邊界條件下崩潰</td><td>在溫箱中做參數掃描（shmoo），找出失效邊界</td></tr>
+      <tr><td>只有某幾片板子失敗</td><td>製程變異、元件批次、組裝問題</td><td>比對好壞板的 TDR 與阻抗量測；X-ray 檢查焊點</td></tr>
+    </table></div>
+
+    <h2>除錯的基本原則</h2>
+    <ul>
+      <li><b>一次只改一個變數</b>，否則不知道是哪個改變起了作用。</li>
+      <li><b>找一片已知良好的板子</b>當對照組，差異往往就是答案。</li>
+      <li><b>先確認量測鏈</b>：同一條線材、治具和儀器，量已知良好的訊號源是否正常。</li>
+      <li><b>把問題縮小到頻率</b>：抖動或雜訊有特定頻率時，通常能直接對應到某個電源或時脈來源。</li>
+    </ul>
+  </section>
+
+  <!-- Tools -->
+  <section class="page" data-page="tools" hidden>
+    <p class="eyebrow">Tools</p>
+    <h1>計算工具</h1>
+    <p class="lead">常用的換算，輸入後立即計算。</p>
+    <div class="tools">
+      <div class="tool">
+        <h3>上升時間與示波器頻寬</h3>
+        <div class="fields">
+          <label for="t-tr">訊號上升時間 (ps)<input type="number" id="t-tr" value="35" min="1" step="any"></label>
+          <label for="t-bw">示波器頻寬 (GHz)<input type="number" id="t-bw" value="25" min="0.1" step="any"></label>
+        </div>
+        <div class="out" id="o-rise"></div>
+      </div>
+      <div class="tool">
+        <h3>資料率 → UI 與奈奎斯特頻率</h3>
+        <div class="fields">
+          <label for="d-rate">資料率 (Gb/s)<input type="number" id="d-rate" value="32" min="0.001" step="any"></label>
+          <label for="d-mod">調變<select id="d-mod"><option value="1">NRZ（1 bit/符號）</option><option value="1.5">PAM3（1.5 bit/符號）</option><option value="2">PAM4（2 bit/符號）</option></select></label>
+        </div>
+        <div class="out" id="o-ui"></div>
+      </div>
+      <div class="tool">
+        <h3>反射係數</h3>
+        <div class="fields">
+          <label for="r-z0">傳輸線 Z₀ (Ω)<input type="number" id="r-z0" value="50" min="0" step="any"></label>
+          <label for="r-zl">負載 Z<sub>L</sub> (Ω)<input type="number" id="r-zl" value="60" min="0" step="any"></label>
+        </div>
+        <div class="out" id="o-refl"></div>
+      </div>
+      <div class="tool">
+        <h3>總抖動換算</h3>
+        <div class="fields">
+          <label for="j-rj">RJ rms (ps)<input type="number" id="j-rj" value="0.4" min="0" step="any"></label>
+          <label for="j-dj">DJ δδ (ps)<input type="number" id="j-dj" value="5" min="0" step="any"></label>
+          <label for="j-ber">目標 BER<select id="j-ber"><option value="11.996">1e-9</option><option value="12.723">1e-10</option><option value="14.069" selected>1e-12</option><option value="15.883">1e-15</option></select></label>
+          <label for="j-ui">UI (ps)<input type="number" id="j-ui" value="31.25" min="0.001" step="any"></label>
+        </div>
+        <div class="out" id="o-jit"></div>
+      </div>
+    </div>
+    <p class="note">示波器上升時間以 0.35 / BW 估算（高斯響應）。頻率響應較陡的示波器，係數約 0.4–0.45。</p>
+  </section>
+
+  <!-- Glossary -->
+  <section class="page" data-page="glossary" hidden>
+    <p class="eyebrow">Glossary</p>
+    <h1>名詞表</h1>
+    <p class="lead">中英對照，可輸入中文或英文搜尋。</p>
+    <label for="g-q" style="display:block;max-width:420px"><input type="search" id="g-q" placeholder="搜尋名詞，例如 抖動、CTLE…" autocomplete="off"></label>
+    <dl class="gl" id="gl"></dl>
+  </section>
+
+  <nav class="pager page" id="pager" aria-label="上一章與下一章"></nav>
+  <footer>內容供學習參考。規格數值與測試方法請以 USB-IF、PCI-SIG、HDMI Licensing、VESA、JEDEC、IEEE 等組織的正式文件為準。</footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  const order=[["home","首頁"],["si","訊號完整性基礎"],["eye","眼圖與抖動"],["measure","量測儀器與方法"],["specs","介面規格速覽"],["flow","驗證流程"],["debug","常見問題排查"],["tools","計算工具"],["glossary","名詞表"]];
+  const pages=[...document.querySelectorAll("section.page")];
+  const links=[...document.querySelectorAll("nav.side a")];
+  const pager=document.getElementById("pager");
+
+  function show(id){
+    if(!pages.some(p=>p.dataset.page===id)) id="home";
+    pages.forEach(p=>p.hidden=p.dataset.page!==id);
+    links.forEach(a=>a.dataset.to===id?a.setAttribute("aria-current","page"):a.removeAttribute("aria-current"));
+    const i=order.findIndex(o=>o[0]===id);
+    let h="";
+    if(i>0) h+=`<a href="#${order[i-1][0]}"><small>← 上一章</small>${order[i-1][1]}</a>`;
+    if(i<order.length-1) h+=`<a class="nx" href="#${order[i+1][0]}"><small>下一章 →</small>${order[i+1][1]}</a>`;
+    pager.innerHTML=h;
+    const cur=links.find(a=>a.dataset.to===id);
+    if(cur&&cur.scrollIntoView&&window.innerWidth<960) cur.scrollIntoView({block:"nearest",inline:"center"});
+    requestAnimationFrame(drawAll);
+  }
+  window.addEventListener("hashchange",()=>{show(location.hash.slice(1));window.scrollTo(0,0)});
+  show(location.hash.slice(1)||"home");
+
+  /* ---------- 眼圖 ---------- */
+  function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+  function gauss(r){let u=0,v=0;while(!u)u=r();while(!v)v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+  function tok(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+  function drawEye(cv){
+    const w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);
+    const c=cv.getContext("2d");c.setTransform(dpr,0,0,dpr,0,0);
+    c.fillStyle=tok("--screen");c.fillRect(0,0,w,h);
+    c.strokeStyle=tok("--grid");c.lineWidth=1;
+    for(let i=1;i<10;i++){const x=Math.round(w*i/10)+.5;c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke()}
+    for(let i=1;i<8;i++){const y=Math.round(h*i/8)+.5;c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke()}
+    const pam=cv.dataset.eye==="pam4",L=pam?4:2,N=pam?900:700,r=rng(pam?7:3);
+    const top=h*.14,bot=h*.86,lv=k=>bot-(bot-top)*k/(L-1);
+    const tau=pam?.09:.1,jit=pam?.018:.025,noise=pam?.012:.02;
+    c.strokeStyle=tok("--trace");c.globalAlpha=pam?.07:.08;c.lineWidth=1.1;
+    const sig=x=>.5*(1+Math.tanh(x));
+    for(let n=0;n<N;n++){
+      const s=[0,0,0,0].map(()=>Math.floor(r()*L));
+      const b1=.5+gauss(r)*jit,b2=1.5+gauss(r)*jit;
+      const isi=(s[0]-s[1])*.06;const off=gauss(r)*noise*(bot-top);
+      c.beginPath();
+      for(let i=0;i<=90;i++){
+        const t=i/90*2;
+        let v=s[1]+(s[2]-s[1])*sig((t-b1)/tau)+(s[3]-s[2])*sig((t-b2)/tau);
+        v+=isi*Math.exp(-Math.max(0,t-b1+.5)*2)*(1-sig((t-b1)/tau));
+        const y=bot-(bot-top)*v/(L-1)+off,x=t/2*w;
+        i?c.lineTo(x,y):c.moveTo(x,y);
+      }
+      c.stroke();
+    }
+    c.globalAlpha=1;c.fillStyle=tok("--muted");c.font="11px 'IBM Plex Mono',monospace";
+    c.fillText("0 UI",6,h-6);c.fillText("1 UI",w/2-12,h-6);c.fillText("2 UI",w-34,h-6);
+  }
+  const canvases=[...document.querySelectorAll("canvas[data-eye]")];
+  function drawAll(){canvases.forEach(drawEye)}
+  if(window.ResizeObserver){const ro=new ResizeObserver(()=>drawAll());canvases.forEach(cv=>ro.observe(cv))}
+  window.addEventListener("resize",drawAll);
+  const mq=window.matchMedia&&matchMedia("(prefers-color-scheme: dark)");
+  if(mq&&mq.addEventListener)mq.addEventListener("change",()=>{drawAll();bathtub()});
+  new MutationObserver(()=>{drawAll();bathtub()}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(drawAll);
+
+  /* ---------- 浴缸曲線 ---------- */
+  function erfc(x){const z=Math.abs(x),t=1/(1+.5*z);const r=t*Math.exp(-z*z-1.26551223+t*(1.00002368+t*(.37409196+t*(.09678418+t*(-.18628806+t*(.27886807+t*(-1.13520398+t*(1.48851587+t*(-.82215223+t*.17087277)))))))));return x>=0?r:2-r}
+  function bathtub(){
+    const svg=document.getElementById("bathtub");if(!svg)return;
+    const W=640,H=300,ml=58,mr=20,mt=14,mb=40,pw=W-ml-mr,ph=H-mt-mb,ymin=-14;
+    const X=u=>ml+u*pw,Y=l=>mt+(l/ymin)*ph;
+    const DJ=.15,RJ=.02;
+    const berL=x=>.5*erfc((x-DJ/2)/(RJ*Math.SQRT2)),berR=x=>berL(1-x);
+    const lg=v=>Math.log10(Math.max(v,1e-300));
+    let pL="",pR="";
+    for(let i=0;i<=400;i++){const x=i/400;const a=Math.min(lg(berL(x)),0),b=Math.min(lg(berR(x)),0);
+      if(a>=ymin)pL+=(pL?"L":"M")+X(x).toFixed(1)+" "+Y(a).toFixed(1);
+      if(b>=ymin)pR+=(pR?"L":"M")+X(x).toFixed(1)+" "+Y(b).toFixed(1);}
+    const g=tok("--grid"),m=tok("--muted"),t=tok("--trace"),k=tok("--marker"),ink=tok("--ink");
+    let s="";
+    for(let l=0;l>=-12;l-=3){s+=`<line x1="${ml}" x2="${W-mr}" y1="${Y(l)}" y2="${Y(l)}" stroke="${g}" fill="none"/><text x="${ml-8}" y="${Y(l)+4}" text-anchor="end" font-size="11" fill="${m}">1e${l}</text>`}
+    [0,.25,.5,.75,1].forEach(u=>{s+=`<line x1="${X(u)}" x2="${X(u)}" y1="${mt}" y2="${H-mb}" stroke="${g}" fill="none"/><text x="${X(u)}" y="${H-mb+16}" text-anchor="middle" font-size="11" fill="${m}">${u} UI</text>`});
+    s+=`<text x="${ml+pw/2}" y="${H-6}" text-anchor="middle" font-size="11" fill="${m}">取樣位置</text>`;
+    s+=`<text x="12" y="${mt+ph/2}" transform="rotate(-90 12 ${mt+ph/2})" text-anchor="middle" font-size="11" fill="${m}">BER</text>`;
+    s+=`<path d="${pL}" stroke="${t}" stroke-width="2" fill="none"/><path d="${pR}" stroke="${t}" stroke-width="2" fill="none"/>`;
+    const q=7.034,xl=DJ/2+q*RJ,xr=1-xl,open=xr-xl;
+    s+=`<line x1="${X(xl)}" x2="${X(xr)}" y1="${Y(-12)}" y2="${Y(-12)}" stroke="${k}" stroke-width="2" fill="none"/>`;
+    s+=`<circle cx="${X(xl)}" cy="${Y(-12)}" r="3.5" fill="${k}"/><circle cx="${X(xr)}" cy="${Y(-12)}" r="3.5" fill="${k}"/>`;
+    s+=`<text x="${X(.5)}" y="${Y(-12)-8}" text-anchor="middle" font-size="12" fill="${ink}">眼寬 @1e-12 ≈ ${open.toFixed(2)} UI</text>`;
+    svg.innerHTML=s;
+    document.getElementById("bt-cap").textContent=`範例：DJ = ${DJ} UI、RJ = ${RJ} UI rms。眼寬 = 1 − DJ − 14.069 × RJ ≈ ${open.toFixed(3)} UI。`;
+  }
+  bathtub();
+
+  /* ---------- 計算工具 ---------- */
+  const $=id=>document.getElementById(id),num=id=>parseFloat($(id).value);
+  const row=(k,v)=>`<div><span>${k}</span><b>${v}</b></div>`;
+  const f=(v,d=2)=>isFinite(v)?(+v.toFixed(d)).toLocaleString("zh-TW",{maximumFractionDigits:d}):"—";
+  function calc(){
+    const tr=num("t-tr"),bw=num("t-bw");
+    const sbw=350/tr,knee=500/tr,str=350/bw,meas=Math.sqrt(tr*tr+str*str),err=(meas/tr-1)*100;
+    $("o-rise").innerHTML=row("訊號頻寬 0.35/t<sub>r</sub>",f(sbw)+" GHz")+row("拐點頻率 0.5/t<sub>r</sub>",f(knee)+" GHz")+row("示波器上升時間",f(str,1)+" ps")+row("量到的上升時間",f(meas,1)+" ps")+row("誤差",`<span style="color:${err>5?"var(--bad)":"var(--good)"}">+${f(err,1)} %</span>`)+row("建議頻寬（3–5×）",f(sbw*3,1)+" – "+f(sbw*5,1)+" GHz");
+    const rate=num("d-rate"),bps=parseFloat($("d-mod").value),baud=rate/bps;
+    $("o-ui").innerHTML=row("符號率",f(baud,3)+" GBd")+row("1 UI",f(1000/baud,2)+" ps")+row("奈奎斯特頻率",f(baud/2,3)+" GHz")+row("FR-4 上 1 UI 約走",f(1000/baud/6.7,2)+" mm");
+    const z0=num("r-z0"),zl=num("r-zl"),g=(zl-z0)/(zl+z0),rl=-20*Math.log10(Math.abs(g));
+    $("o-refl").innerHTML=row("反射係數 Γ",f(g,3))+row("反射電壓比例",f(Math.abs(g)*100,1)+" %")+row("回波損耗",g===0?"∞ dB（完全匹配）":f(rl,1)+" dB")+row("透射係數 1+Γ",f(1+g,3));
+    const rj=num("j-rj"),dj=num("j-dj"),q2=parseFloat($("j-ber").value),ui=num("j-ui"),tj=dj+q2*rj,ew=ui-tj;
+    $("o-jit").innerHTML=row("總抖動 TJ",f(tj,2)+" ps")+row("佔 UI",f(tj/ui*100,1)+" %")+row("剩餘眼寬",`<span style="color:${ew>0?"var(--good)":"var(--bad)"}">${f(ew,2)} ps</span>`);
+  }
+  document.querySelectorAll(".tool input,.tool select").forEach(e=>e.addEventListener("input",calc));
+  calc();
+
+  /* ---------- 檢查清單 ---------- */
+  const items=["儀器在校正有效期內，已暖機並完成自我校正","探棒已補償，差動通道已 deskew","確認示波器頻寬、取樣率與規格要求一致","治具 S 參數檔正確載入，去嵌入設定已確認","CDR 類型與迴路頻寬依規格設定","參考等化器（CTLE / DFE）設定依規格","待測物已進入正確的相容性測試模式","記錄板號、韌體版本、線材編號與環境溫度","已用已知良好的樣品確認量測鏈正常"];
+  const KEY="sv-checklist";let st={};try{st=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){}
+  const ul=$("checklist");
+  ul.innerHTML=items.map((t,i)=>`<li><label for="ck${i}"><input type="checkbox" id="ck${i}" ${st[i]?"checked":""}><span>${t}</span></label></li>`).join("");
+  function upd(){const c=ul.querySelectorAll("input:checked").length;$("ck-count").textContent=`${c} / ${items.length} 完成`}
+  ul.addEventListener("change",e=>{const i=e.target.id.slice(2);st[i]=e.target.checked;try{localStorage.setItem(KEY,JSON.stringify(st))}catch(err){}upd()});
+  $("ck-reset").addEventListener("click",()=>{st={};ul.querySelectorAll("input").forEach(i=>i.checked=false);try{localStorage.removeItem(KEY)}catch(e){}upd()});
+  upd();
+
+  /* ---------- 名詞表 ---------- */
+  const G=[
+    ["訊號完整性","Signal Integrity, SI","訊號從發送端到接收端能否保持可正確判讀的品質，涵蓋反射、損耗、串音與抖動。"],
+    ["電源完整性","Power Integrity, PI","電源網路在負載變化下維持穩定電壓的能力，電源雜訊會轉成抖動。"],
+    ["單位間隔","Unit Interval, UI","一個位元或符號的時間長度，等於符號率的倒數。"],
+    ["上升時間","Rise Time","訊號由低到高的轉換時間，常用 10%–90% 或 20%–80%。"],
+    ["特性阻抗","Characteristic Impedance, Z₀","傳輸線上電壓與電流波的比值，由線寬、疊構與材料決定。"],
+    ["反射係數","Reflection Coefficient, Γ","阻抗不連續處反射電壓與入射電壓的比值。"],
+    ["插入損耗","Insertion Loss","訊號通過通道後衰減的量，通常以 dB 表示，對應 S21 / SDD21。"],
+    ["回波損耗","Return Loss","反射回來的能量大小，對應 S11 / SDD11，數值愈大代表反射愈小。"],
+    ["串音","Crosstalk","相鄰訊號線間的耦合干擾，分為近端 NEXT 與遠端 FEXT。"],
+    ["符號間干擾","Inter-Symbol Interference, ISI","前面位元的殘餘能量影響後面位元，主要由通道損耗與反射造成。"],
+    ["眼圖","Eye Diagram","把多個 UI 的波形疊合顯示，用來評估振幅與時序裕度。"],
+    ["遮罩測試","Mask Test","檢查眼圖波形是否侵入規格定義的禁止區域。"],
+    ["抖動","Jitter","訊號邊緣在時間上相對理想位置的偏移。"],
+    ["隨機抖動","Random Jitter, RJ","無上界、呈高斯分布的抖動，以 rms 值描述。"],
+    ["確定性抖動","Deterministic Jitter, DJ","有上界的抖動，包含 ISI、DCD、PJ、BUJ。"],
+    ["週期性抖動","Periodic Jitter, PJ","以固定頻率重複的抖動，常來自電源漣波或其他時脈耦合。"],
+    ["工作週期失真","Duty Cycle Distortion, DCD","高低電位時間不對稱造成的抖動。"],
+    ["總抖動","Total Jitter, TJ","在指定 BER 下的總抖動，TJ = DJ + 2Q × RJ。"],
+    ["位元錯誤率","Bit Error Rate, BER","錯誤位元數除以總傳輸位元數，常見目標為 1e-12。"],
+    ["浴缸曲線","Bathtub Curve","BER 對取樣位置的曲線，用來推算指定 BER 下的眼寬。"],
+    ["時脈資料恢復","Clock Data Recovery, CDR","從資料流中恢復取樣時脈的電路或演算法。"],
+    ["展頻時脈","Spread Spectrum Clocking, SSC","刻意微幅調變時脈頻率以降低 EMI 峰值。"],
+    ["去強調","De-emphasis","發送端降低連續相同位元的振幅，相對強化高頻轉態。"],
+    ["前饋等化器","Feed-Forward Equalizer, FFE","以多個抽頭加權組合訊號的等化器，常用於發送端。"],
+    ["連續時間線性等化器","CTLE","接收端提升高頻增益以補償通道損耗的類比等化器。"],
+    ["決策回授等化器","Decision Feedback Equalizer, DFE","利用已判讀位元扣除 ISI 的非線性等化器。"],
+    ["去嵌入","De-embedding","利用 S 參數從量測結果中移除治具或線材的影響。"],
+    ["時域反射","Time Domain Reflectometry, TDR","送出步階訊號並量反射，得到沿路阻抗分布。"],
+    ["向量網路分析儀","Vector Network Analyzer, VNA","在頻域量測元件或通道 S 參數的儀器。"],
+    ["S 參數","Scattering Parameters","描述多埠網路在各頻率下反射與傳輸特性的參數。"],
+    ["位元錯誤率測試儀","Bit Error Rate Tester, BERT","產生測試型樣並統計錯誤的儀器，用於接收端測試。"],
+    ["壓力眼","Stressed Eye","刻意加入抖動與雜訊的劣化訊號，用於接收端容忍度測試。"],
+    ["迴路回送","Loopback","待測物把收到的資料原樣送回，供 BERT 比對錯誤。"],
+    ["四階脈衝振幅調變","PAM4","每個符號有 4 個電壓階、攜帶 2 個位元的調變方式。"],
+    ["前向錯誤更正","Forward Error Correction, FEC","加入冗餘資料讓接收端能自行更正錯誤。"],
+    ["相容性測試規範","Compliance Test Specification, CTS","規格組織定義的正式測試項目與判定標準。"],
+    ["量測方法說明","Method of Implementation, MOI","儀器廠針對特定規格撰寫的量測步驟與設定。"],
+    ["通道運作裕度","Channel Operating Margin, COM","以 S 參數與參考接收器計算通道裕度的方法，常見於乙太網路。"],
+    ["裕度掃描","Shmoo","在不同電壓、溫度或設定下反覆測試，畫出通過與失敗的邊界。"],
+    ["偏移","Skew","兩個訊號之間的時間差，例如差動對 P/N 或 DQS 與 DQ。"]
+  ];
+  const gl=$("gl");
+  function renderG(q){q=(q||"").trim().toLowerCase();
+    const r=G.filter(g=>!q||g.join(" ").toLowerCase().includes(q));
+    gl.innerHTML=r.length?r.map(g=>`<div><dt>${g[0]}<small>${g[1]}</small></dt><dd>${g[2]}</dd></div>`).join(""):`<p class="empty">找不到「${q.replace(/[<>&"]/g,"")}」。試試英文縮寫，例如 RJ、CTLE。</p>`}
+  $("g-q").addEventListener("input",e=>renderG(e.target.value));
+  renderG("");
+})();
+</script>
+</body>
+</html>
