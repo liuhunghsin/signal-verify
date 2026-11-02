@@ -141,6 +141,21 @@ input[type=search]{font-family:var(--f-body)}
 .pager .nx{text-align:right;margin-left:auto}
 footer{max-width:740px;font-size:13px;color:var(--muted);margin-top:40px}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+/* Redmine */
+.rm-form{display:grid;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;margin:12px 0 16px}
+.rm-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.rm-form label{display:grid;gap:3px;font-size:13px;color:var(--muted);min-width:0}
+.rm-form input[type=text],.rm-form input[type=password],.rm-form input[type=url]{font:inherit;font-family:var(--f-mono);font-size:14px;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);width:100%;min-width:0}
+.rm-form .chk{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--ink)}
+.rm-btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{font:inherit;font-size:14px;padding:7px 14px;border-radius:6px;border:1px solid var(--trace);background:var(--trace);color:var(--surface);cursor:pointer}
+.btn.ghost{background:none;color:var(--muted);border-color:var(--line)}
+.rm-status{font-size:14px;padding:10px 12px;border-radius:6px;background:var(--code);white-space:pre-line}
+.rm-status.err{color:var(--bad)}
+.rm-status.ok{color:var(--good)}
+.pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+.pill.hi{border-color:var(--bad);color:var(--bad)}
+.late{color:var(--bad);font-weight:500}
 </style>
 </head>
 <body>
@@ -160,6 +175,8 @@ footer{max-width:740px;font-size:13px;color:var(--muted);margin-top:40px}
       <li class="grp">參考</li>
       <li><a href="#tools" data-to="tools">計算工具</a></li>
       <li><a href="#glossary" data-to="glossary">名詞表</a></li>
+      <li class="grp">工作</li>
+      <li><a href="#redmine" data-to="redmine">Redmine 議題</a></li>
     </ol>
   </nav>
 
@@ -540,6 +557,35 @@ footer{max-width:740px;font-size:13px;color:var(--muted);margin-top:40px}
     <p class="note">示波器上升時間以 0.35 / BW 估算（高斯響應）。頻率響應較陡的示波器，係數約 0.4–0.45。</p>
   </section>
 
+  <!-- Redmine -->
+  <section class="page" data-page="redmine" hidden>
+    <p class="eyebrow">Redmine</p>
+    <h1>我的 Redmine 議題</h1>
+    <p class="lead">輸入你自己的 Redmine 網址與 API 存取金鑰，直接查詢指派給你的議題。金鑰只存在你這台裝置的瀏覽器，不會上傳到這個網站。</p>
+    <form class="rm-form" id="rm-form" autocomplete="off">
+      <div class="rm-row">
+        <label for="rm-url">Redmine 網址<input type="url" id="rm-url" placeholder="https://redmine.example.com" required></label>
+        <label for="rm-key">API 存取金鑰<input type="password" id="rm-key" placeholder="在 Redmine「我的帳戶」頁右側取得" required></label>
+      </div>
+      <div class="rm-row">
+        <label for="rm-proj">專案識別碼（選填）<input type="text" id="rm-proj" placeholder="例如 ces-si"></label>
+        <label for="rm-scope">範圍<select id="rm-scope"><option value="me">指派給我</option><option value="all">全部（依專案）</option></select></label>
+        <label for="rm-st">狀態<select id="rm-st"><option value="open">未結案</option><option value="closed">已結案</option><option value="*">全部</option></select></label>
+      </div>
+      <label class="chk" for="rm-remember"><input type="checkbox" id="rm-remember">在這台裝置記住金鑰（共用電腦請勿勾選）</label>
+      <div class="rm-btns"><button class="btn" type="submit">查詢議題</button><button class="btn ghost" type="button" id="rm-clear">清除金鑰</button></div>
+    </form>
+    <div class="rm-status" id="rm-status">尚未查詢。填好網址與金鑰後按「查詢議題」。</div>
+    <div class="tbl" id="rm-tbl" hidden><table><thead><tr><th>#</th><th>專案</th><th>追蹤</th><th>狀態</th><th>優先</th><th>主旨</th><th>到期</th><th>更新</th></tr></thead><tbody id="rm-body"></tbody></table></div>
+    <h2>無法連線時</h2>
+    <ul>
+      <li><b>要在公司網路內</b>：Redmine 在內網時，需連公司網路或 VPN。</li>
+      <li><b>Redmine 需為 https</b>：這個網站是 https，瀏覽器會擋下對 http 網址的請求。</li>
+      <li><b>需開啟 CORS</b>：請 Redmine 管理員允許來源 <code>https://liuhunghsin.github.io</code>，並允許標頭 <code>X-Redmine-API-Key</code>。</li>
+      <li><b>需啟用 REST API</b>：管理 → 設定 → API →「啟用 REST web service」。</li>
+    </ul>
+  </section>
+
   <!-- Glossary -->
   <section class="page" data-page="glossary" hidden>
     <p class="eyebrow">Glossary</p>
@@ -556,7 +602,7 @@ footer{max-width:740px;font-size:13px;color:var(--muted);margin-top:40px}
 
 <script>
 (function(){
-  const order=[["home","首頁"],["si","訊號完整性基礎"],["eye","眼圖與抖動"],["measure","量測儀器與方法"],["specs","介面規格速覽"],["flow","驗證流程"],["debug","常見問題排查"],["tools","計算工具"],["glossary","名詞表"]];
+  const order=[["home","首頁"],["si","訊號完整性基礎"],["eye","眼圖與抖動"],["measure","量測儀器與方法"],["specs","介面規格速覽"],["flow","驗證流程"],["debug","常見問題排查"],["tools","計算工具"],["glossary","名詞表"],["redmine","Redmine 議題"]];
   const pages=[...document.querySelectorAll("section.page")];
   const links=[...document.querySelectorAll("nav.side a")];
   const pager=document.getElementById("pager");
@@ -727,6 +773,40 @@ footer{max-width:740px;font-size:13px;color:var(--muted);margin-top:40px}
     gl.innerHTML=r.length?r.map(g=>`<div><dt>${g[0]}<small>${g[1]}</small></dt><dd>${g[2]}</dd></div>`).join(""):`<p class="empty">找不到「${q.replace(/[<>&"]/g,"")}」。試試英文縮寫，例如 RJ、CTLE。</p>`}
   $("g-q").addEventListener("input",e=>renderG(e.target.value));
   renderG("");
+  /* ---------- Redmine ---------- */
+  (function(){
+    const K={url:"rm-url",key:"rm-key",proj:"rm-proj"},st=$("rm-status"),body=$("rm-body"),tbl=$("rm-tbl");
+    const get=k=>{try{return localStorage.getItem(k)||sessionStorage.getItem(k)||""}catch(e){return""}};
+    const put=(k,v,keep)=>{try{(keep?localStorage:sessionStorage).setItem(k,v);(keep?sessionStorage:localStorage).removeItem(k)}catch(e){}};
+    $("rm-url").value=get("rm.url")||"http://advrm.advantech.com:3005";$("rm-proj").value=get("rm.proj");$("rm-key").value=get("rm.key");
+    try{$("rm-remember").checked=!!localStorage.getItem("rm.key")}catch(e){}
+    const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+    const say=(t,c)=>{st.textContent=t;st.className="rm-status"+(c?" "+c:"")};
+    $("rm-clear").addEventListener("click",()=>{["rm.key"].forEach(k=>{try{localStorage.removeItem(k);sessionStorage.removeItem(k)}catch(e){}});$("rm-key").value="";$("rm-remember").checked=false;say("金鑰已從這台裝置清除。")});
+    $("rm-form").addEventListener("submit",async e=>{
+      e.preventDefault();
+      let base=$("rm-url").value.trim().replace(/\/+$/,"");const key=$("rm-key").value.trim(),proj=$("rm-proj").value.trim(),keep=$("rm-remember").checked;
+      if(!/^https?:\/\//.test(base)){say("網址要以 https:// 開頭。","err");return}
+      put("rm.url",base,true);put("rm.proj",proj,true);put("rm.key",key,keep);
+      const mixed=location.protocol==="https:"&&base.startsWith("http:");
+      const q=new URLSearchParams({status_id:$("rm-st").value,limit:"100",sort:"updated_on:desc"});
+      if($("rm-scope").value==="me")q.set("assigned_to_id","me");
+      const path=(proj?"/projects/"+encodeURIComponent(proj):"")+"/issues.json?"+q;
+      say("查詢中…");tbl.hidden=true;
+      try{
+        const r=await fetch(base+path,{headers:{"X-Redmine-API-Key":key,"Accept":"application/json"}});
+        if(r.status===401){say("金鑰無效（401）。請到 Redmine「我的帳戶」確認 API 存取金鑰。","err");return}
+        if(r.status===403){say("沒有權限（403），或 Redmine 未啟用 REST API。","err");return}
+        if(r.status===404){say("找不到（404）。請檢查網址或專案識別碼。","err");return}
+        if(!r.ok){say("Redmine 回應錯誤："+r.status,"err");return}
+        const d=await r.json(),is=d.issues||[],today=new Date().toISOString().slice(0,10);
+        body.innerHTML=is.map(i=>{const due=i.due_date||"",late=due&&due<today&&!i.closed_on;
+          return `<tr><td class="num"><a href="${esc(base)}/issues/${i.id}" target="_blank" rel="noopener">${i.id}</a></td><td>${esc(i.project&&i.project.name)}</td><td>${esc(i.tracker&&i.tracker.name)}</td><td><span class="pill">${esc(i.status&&i.status.name)}</span></td><td><span class="pill${i.priority&&i.priority.id>2?" hi":""}">${esc(i.priority&&i.priority.name)}</span></td><td>${esc(i.subject)}</td><td class="num${late?" late":""}">${esc(due)||"—"}</td><td class="num">${esc((i.updated_on||"").slice(0,10))}</td></tr>`}).join("");
+        tbl.hidden=!is.length;
+        say(is.length?`共 ${d.total_count} 筆，顯示最近更新的 ${is.length} 筆。`:"沒有符合條件的議題。","ok");
+      }catch(err){say("無法連到 Redmine。常見原因：\n"+(mixed?"• Redmine 網址是 http，瀏覽器預設會擋下 https 網站對 http 的請求\n":"")+"• 不在公司網路或 VPN 內\n• Redmine 未允許來自這個網站的跨來源請求（CORS）\n• 網址打錯","err")}
+    });
+  })();
 })();
 </script>
 </body>
